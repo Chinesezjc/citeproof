@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local data / secrets
+.env
+.env.*
+!.env.example
+data/cache/
+*.sqlite
+*.sqlite3
+*.db
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+.pnpm-store/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Probe scratch (not part of the project)
+.probe/
+
+# Audit reports and generated results are reproducible; do not track them.
+data/audits/
+
+# TypeScript incremental build state
+*.tsbuildinfo
