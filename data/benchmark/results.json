@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-09-11T10:10:33+00:00",
+  "generated_at": "2026-09-14T04:30:55+00:00",
   "access_mode": "anonymous",
   "support_check_enabled": false,
   "documents": [
     {
       "id": "avianca",
       "title": "Mata v. Avianca, Inc.: fabricated and miscited citations from the March 1, 2023 Affirmation in Opposition, with real air-carriage authorities as negative controls",
-      "duration_ms": 144,
+      "duration_ms": 107,
       "api_requests": 0,
       "cache_hits": 31,
       "integrity_score": 33.3,
@@ -159,7 +159,7 @@
     {
       "id": "real_brief",
       "title": "Negative control: composed passage citing only real, correctly cited air-carriage authorities",
-      "duration_ms": 83,
+      "duration_ms": 63,
       "api_requests": 0,
       "cache_hits": 59,
       "integrity_score": 100.0,

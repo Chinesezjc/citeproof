@@ -1,0 +1,17 @@
+.git
+.venv
+.venv/
+.probe
+node_modules
+**/node_modules
+frontend/node_modules
+frontend/src
+frontend/dist/assets/*.map
+data/cache
+data/audits
+docs/demo/raw
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.gitignore
+.env

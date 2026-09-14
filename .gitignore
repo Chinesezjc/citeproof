@@ -36,3 +36,7 @@ data/audits/
 
 # TypeScript incremental build state
 *.tsbuildinfo
+
+# Playwright writes intermediate video files here; the published walkthrough is
+# docs/demo/citeproof-walkthrough.webm and is tracked.
+docs/demo/raw/

@@ -113,6 +113,49 @@ cd frontend && pnpm install && pnpm build
 
 The built files in `frontend/dist` are served by the API at `/`.
 
+### Demo interaction script
+
+Use a local script that starts the backend, checks health, creates a sample audit, polls it,
+and prints the markdown report:
+
+```bash
+./scripts/demo_local.sh
+```
+
+To avoid cache interference or port conflicts:
+
+```bash
+API_PORT=8001 ./scripts/demo_local.sh
+```
+
+To start the frontend too and keep the browser session open for manual interaction:
+
+```bash
+START_FRONTEND=1 WAIT_FOR_INTERACTION=1 ./scripts/demo_local.sh
+```
+
+`START_FRONTEND=1` starts `pnpm dev` on port 5173 and opens the page automatically when `open` is available.
+`WAIT_FOR_INTERACTION=1` keeps both backend and frontend processes alive after the sample audit completes.
+
+The script exits non-zero if the backend is not reachable, frontend fails to start, or the sample audit fails.
+
+### Demo recording
+
+A recording script is provided for generating the benchmark walkthrough assets:
+
+```bash
+./.venv/bin/python scripts/record_demo.py --url http://127.0.0.1:8000 --out docs/demo --screenshots docs/screenshots
+```
+
+The script requires Playwright in the project environment:
+
+```bash
+./.venv/bin/pip install playwright
+./.venv/bin/playwright install chromium
+```
+
+The generated outputs are consumed as evidence and optional upload source for the final video.
+
 ### Command line
 
 ```bash
