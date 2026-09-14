@@ -162,14 +162,28 @@ with an AI assistant, is in `docs/AI-TOOLS.md`.
 
 ## Submission checklist
 
-| Requirement | Where |
+| Requirement | Status |
 | --- | --- |
-| Project title and short description | above |
-| Problem and solution | above |
-| Working link or code repository | <https://github.com/Chinesezjc/citeproof> |
-| Demonstration video, 3 minutes or less | to be recorded; script in `docs/VIDEO-SCRIPT.md` |
-| Tech stack and credits | `docs/AI-TOOLS.md` |
-| Screenshots | `docs/screenshots/`, in walkthrough order |
+| Project title and short description | Done, above. |
+| Problem and solution | Done, above. |
+| Working link or code repository | Done: <https://github.com/Chinesezjc/citeproof> |
+| Demonstration video, 3 minutes or less | **Recorded, not yet hosted.** The recording is `docs/demo/citeproof-walkthrough.webm`, 1 minute 22 seconds. The rules require the video to be hosted on YouTube, Vimeo or Loom, so it has to be uploaded before submitting. `docs/VIDEO-SCRIPT.md` has narration to record over it if a narrated version is preferred. |
+| Tech stack and credits | Done: `docs/AI-TOOLS.md`. |
+| Screenshots | Done: `docs/screenshots/`, listed below. |
+
+### What still has to be done outside this repository
+
+1. **Upload the demonstration video** to YouTube, Vimeo or Loom and put the link in the
+   submission. The rules do not accept a repository path for the video.
+2. **Optionally deploy a live instance** so a reviewer can run an audit without cloning.
+   `docs/DEPLOYMENT.md` covers this; it needs an account on a hosting platform, which is why
+   it is not already done. The repository satisfies the rules on its own: they accept a public
+   code repository in place of a live link.
+3. **Supply a CourtListener API token** to the deployed instance to switch it from anonymous
+   access to authenticated access. Without one the deployed instance still detects fabricated
+   citations, which is the headline capability, but it cannot confirm a citation number and
+   the proposition-support check reports `unknown`.
+4. **Submit the entry on Devpost** before 27 September 2026, 5:00pm EDT.
 
 ### Screenshot order for the submission gallery
 
