@@ -113,6 +113,18 @@ cd frontend && pnpm install && pnpm build
 
 The built files in `frontend/dist` are served by the API at `/`.
 
+### Tests
+
+The test suite runs without network access. It is an extra, so it is not installed by
+`pip install -e .`:
+
+```bash
+./.venv/bin/pip install -e ".[dev]"
+./.venv/bin/python -m pytest backend/tests -q
+```
+
+41 tests, about 0.1 seconds.
+
 ### Demo interaction script
 
 Use a local script that starts the backend, checks health, creates a sample audit, polls it,
@@ -181,6 +193,13 @@ Copy `.env.example` to `.env`. Every setting is optional.
 
 Every upstream response is cached in SQLite, so re-auditing a document, or auditing a second
 document that cites the same authorities, performs no upstream requests.
+
+An audit costs two upstream requests per case citation, plus one more when a citation is not
+confirmed and the reporter implies a court. In anonymous access mode requests are paced to stay
+inside the corpus allowance, and that pacing dominates the runtime: a cold-cache audit of the
+14-citation fixture measured **2 minutes 35 seconds**, about 11 seconds per citation. With a
+token, the same audit completes in seconds. A cached audit performs no upstream requests and
+finishes in milliseconds.
 
 ### Access modes
 

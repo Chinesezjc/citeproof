@@ -195,7 +195,8 @@ can reproduce the check rather than take the verdict on trust.
 
 Each case citation costs two upstream requests: one name search and one citation search. A
 court-filtered citation search is added when the citation is not confirmed and the reporter
-implies a court. In anonymous mode requests are paced at 3.6 seconds apart, so a document with
-seven citations takes about 50 seconds on a cold cache; with a token configured, the same audit
-completes in a few seconds. Every response is cached in SQLite, so a repeated audit performs no
-upstream requests at all and the measured figures in the README can be reproduced from the cache.
+implies a court. In anonymous mode requests are paced at 3.6 seconds apart, and that pacing
+dominates the runtime: a cold-cache audit of the 14-citation fixture was measured at 2 minutes
+35 seconds, about 11 seconds per citation. With a token configured, the same audit completes in
+seconds. Every response is cached in SQLite, so a repeated audit performs no upstream requests
+at all and the measured figures in the README can be reproduced from the cache.
