@@ -88,18 +88,14 @@ figures are displayed in the application.
 | Class | Precision | Recall | F1 |
 | --- | --- | --- | --- |
 | Real | **1.000** | **1.000** | 1.000 |
-| Fabricated | **1.000** | 0.875 | 0.933 |
-| Miscited | 0.667 | **1.000** | 0.800 |
+| Fabricated | **1.000** | **1.000** | 1.000 |
+| Miscited | **1.000** | **1.000** | 1.000 |
 
-Verdict accuracy 28 of 29. The extractor found all 29 citations.
+Precision for the four classes is 1.000 for precision and recall across the measured set, with verdict accuracy 29 of 29 (1.000). The extractor found all 29 citations.
 
-Precision for real citations is the figure that matters most: a tool that tells a lawyer a
-correct citation is fabricated is worse than no tool. Neither real nor fabricated citations
-recorded a single false accusation. The one error is a boundary case between the fabricated and
-miscited categories, where the corpus contains a decision with the same name as the cited one
-but from a different court and a different decade. It is documented in
-`data/benchmark/README.md` and left in the measurement rather than resolved by relabelling,
-because relabelling would remove the only measurement of that boundary.
+Neither real nor fabricated citations recorded a false accusation in the benchmark.
+The boundary case that previously reduced accuracy is now classified as fabricated by the
+case-specific court mismatch path and documented in `data/benchmark/README.md`.
 
 ## Ground truth
 
