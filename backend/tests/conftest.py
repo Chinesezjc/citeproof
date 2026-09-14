@@ -62,7 +62,15 @@ class FakeCorpus:
         court = filters.get("court")
         if (query, court) in self.responses:
             return {"results": self.responses[(query, court)]}
-        return {"results": self.responses.get(query, [])}
+        if query in self.responses:
+            return {"results": self.responses[query]}
+        # A key ending in '*' matches any query that starts with the key's stem.
+        # The passage-retrieval query appends terms taken from the citing
+        # sentence, so its exact text is not known before the engine builds it.
+        for key, results in self.responses.items():
+            if isinstance(key, str) and key.endswith("*") and query.startswith(key[:-1]):
+                return {"results": results}
+        return {"results": []}
 
     def get_cluster(self, cluster_id: int | str) -> dict[str, Any]:
         raise AuthenticationRequired("the stub corpus holds no opinion text")
@@ -103,3 +111,23 @@ def extract():
         return extract_citations(text)
 
     return _extract
+
+
+class FakeLanguageModel:
+    """A stub model that records what it was asked to judge."""
+
+    def __init__(self, result=None) -> None:
+        from citeproof.schemas import FidelityCheck, SupportLevel
+
+        self.calls: list[dict[str, Any]] = []
+        self.enabled = True
+        self.model = "stub-model"
+        self._result = result or FidelityCheck(
+            support=SupportLevel.SUPPORTED, confidence=0.9, rationale="stub rationale"
+        )
+
+    def assess_support(self, sentence: str, case_name: str | None, passage: str | None, citation: str | None = None):
+        self.calls.append(
+            {"sentence": sentence, "case_name": case_name, "passage": passage, "citation": citation}
+        )
+        return self._result

@@ -249,6 +249,15 @@ passages it was given, so a fabricated phrase cannot be presented as the reason 
 Passages are selected from the authority by lexical overlap with the citing sentence, and the
 finding records that the passage was selected this way.
 
+**This check needs a CourtListener token to produce a verdict.** Judging whether an authority
+supports a proposition requires the text of that authority. In anonymous access mode the corpus
+cannot return it: a search for an authority returns the opinions that *mention* it, and using
+one of those as the authority's text would make the verdict describe the wrong document. The
+check therefore only accepts a passage that comes from the cited authority itself, and without
+a token it reports `unknown` together with that reason. Verified against the live model: a
+passage that supports the proposition is reported as `supported`, a passage stating the
+opposite as `contradicted`, and no passage at all leaves the model uncalled.
+
 This check is off by default because it costs one model call per citation.
 
 ## Limitations

@@ -309,3 +309,139 @@ def test_a_public_domain_citation_is_reported_with_its_weaker_evidence():
     assert finding.verdict == Verdict.FABRICATED
     assert any("public-domain" in note for note in finding.advisories)
     assert finding.confidence < 0.9
+
+
+# -- the proposition-support check -----------------------------------------
+
+
+def test_support_check_declines_when_the_passage_cannot_be_attributed():
+    """A snippet from a case that merely mentions the authority is not usable evidence.
+
+    In anonymous mode the corpus returns the opinions that mention an authority
+    rather than the text of the authority itself. Judging support from one of
+    those would describe the wrong document, so the check must decline and say
+    why, and it must not call the model at all.
+    """
+
+    from citeproof.schemas import ResolvedCase, SupportLevel
+    from citeproof.verify import CitationVerifier, VerifierOptions
+
+    from conftest import FakeLanguageModel
+
+    resolved = ResolvedCase(
+        case_name="Zicherman v. Korean Air Lines Co.",
+        cluster_id=7,
+        citations=["516 U.S. 217"],
+        snippet="text of the authority",
+    )
+    # The passage search returns a different case, cluster 99.
+    corpus = FakeCorpus(
+        {
+            '"Zicherman v. Korean Air Lines Co."*': [
+                case_result(99, "Cohen v. American Airlines", ["20-3426-cv"], snippet="unrelated text")
+            ]
+        }
+    )
+    model = FakeLanguageModel()
+    verifier = CitationVerifier(
+        corpus, llm=model, options=VerifierOptions(check_quotes=False, check_support=True)
+    )
+    citations, _ = extract_citations("Zicherman v. Korean Air Lines Co., 516 U.S. 217 (1996), controls.")
+    finding = verifier.check_support(citations[0], resolved)
+
+    assert finding is not None
+    assert finding.support == SupportLevel.UNKNOWN
+    assert model.calls == [], "the model must not be asked to judge from another case's text"
+    assert "token" in finding.rationale
+
+
+def test_support_check_uses_a_snippet_from_the_authority_itself():
+    """When the snippet does come from the resolved record, the model is asked."""
+
+    from citeproof.schemas import ResolvedCase, SupportLevel
+    from citeproof.verify import CitationVerifier, VerifierOptions
+
+    from conftest import FakeLanguageModel
+
+    resolved = ResolvedCase(
+        case_name="Zicherman v. Korean Air Lines Co.",
+        cluster_id=7,
+        citations=["516 U.S. 217"],
+    )
+    corpus = FakeCorpus(
+        {
+            '"Zicherman v. Korean Air Lines Co."*': [
+                case_result(7, "Zicherman v. Korean Air Lines Co.", ["516 U.S. 217"],
+                            snippet="The Convention provides the exclusive remedy.")
+            ]
+        }
+    )
+    model = FakeLanguageModel()
+    verifier = CitationVerifier(
+        corpus, llm=model, options=VerifierOptions(check_quotes=False, check_support=True)
+    )
+    citations, _ = extract_citations(
+        "Zicherman v. Korean Air Lines Co., 516 U.S. 217 (1996), holds that the Convention is exclusive."
+    )
+    finding = verifier.check_support(citations[0], resolved)
+
+    assert len(model.calls) == 1
+    assert model.calls[0]["passage"] == "The Convention provides the exclusive remedy."
+    assert finding.support == SupportLevel.SUPPORTED
+    assert "snippet" in finding.rationale
+
+
+def test_support_check_does_not_run_without_a_model():
+    from citeproof.schemas import ResolvedCase
+    from citeproof.verify import CitationVerifier, VerifierOptions
+
+    resolved = ResolvedCase(case_name="X v. Y", cluster_id=1, citations=["1 U.S. 1"])
+    verifier = CitationVerifier(FakeCorpus({}), options=VerifierOptions(check_quotes=False))
+    citations, _ = extract_citations("X v. Y, 1 U.S. 1 (1900), controls.")
+    assert verifier.check_support(citations[0], resolved) is None
+
+
+def test_passage_selection_prefers_the_paragraph_that_matches_the_sentence():
+    from citeproof.verify import _select_passage
+
+    full_text = (
+        "The Convention governs international carriage by air.\n\n"
+        "This appeal concerns a cargo dispute between two freight forwarders.\n\n"
+        "We hold that the Convention provides the exclusive remedy for claims arising out "
+        "of international air carriage, and that local law remedies are therefore unavailable.\n\n"
+        "The judgment of the district court is affirmed in part and reversed in part."
+    )
+    sentence = "The Convention provides the exclusive remedy for claims arising out of international air carriage."
+    passage = _select_passage(full_text, sentence)
+    assert passage is not None
+    assert "exclusive remedy" in passage
+    assert "cargo dispute between two freight forwarders" not in passage
+
+
+def test_sentence_level_selection_when_the_text_has_no_paragraph_breaks():
+    from citeproof.verify import _select_passage
+
+    one_block = (
+        "The Convention governs international carriage by air. This appeal concerns a cargo "
+        "dispute between two freight forwarders. We hold that the Convention provides the "
+        "exclusive remedy for claims arising out of international air carriage. The judgment "
+        "of the district court is affirmed in part and reversed in part."
+    )
+    sentence = "The Convention provides the exclusive remedy for claims arising out of international air carriage."
+    passage = _select_passage(one_block, sentence)
+    assert passage is not None
+    assert "exclusive remedy" in passage
+    assert "cargo dispute" not in passage
+
+
+def test_markup_stripping_preserves_paragraph_breaks():
+    """Passage selection scores against paragraph structure, so it has to survive."""
+
+    from citeproof.verify import _strip_html
+
+    html = "<p>First paragraph of the opinion.</p>\r\n\r\n<p>Second paragraph, much longer, with details.</p>"
+    text = _strip_html(html)
+    assert "\n\n" in text
+    assert "First paragraph of the opinion." in text
+    assert "Second paragraph" in text
+    assert "<p>" not in text

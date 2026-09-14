@@ -93,7 +93,18 @@ class _SearchOutcome:
 
 
 def _strip_html(value: str) -> str:
-    return _WS.sub(" ", _HTML_TAG.sub(" ", value)).strip()
+    """Remove markup while preserving paragraph breaks.
+
+    Paragraph breaks carry the structure that passage selection scores against,
+    so runs of spaces and tabs are collapsed but newlines are kept.
+    """
+
+    text = _HTML_TAG.sub(" ", value)
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    text = re.sub(r"[ \t\f\v]+", " ", text)
+    text = re.sub(r" *\n *", "\n", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
 
 
 def _resolved_from(result: dict[str, Any], source: str) -> ResolvedCase:
@@ -167,7 +178,12 @@ def _select_passage(full_text: str, sentence: str, max_chars: int = 3500) -> str
     if not full_text:
         return None
     terms = {t.lower() for t in _WORD.findall(sentence)} - _STOPWORDS
-    paragraphs = [p for p in re.split(r"\n{2,}|(?<=\.)\s{2,}", full_text) if p.strip()]
+    paragraphs = [p for p in re.split(r"\n{2,}", full_text) if p.strip()]
+    if len(paragraphs) < 2:
+        # Some opinion records arrive as a single block of text. Scoring then has
+        # to work at sentence granularity, or every query would select the whole
+        # document and truncate it.
+        paragraphs = [p for p in re.split(r"(?<=[.!?])\s+", full_text) if p.strip()]
     if not paragraphs:
         paragraphs = [full_text]
     if not terms:
@@ -370,22 +386,64 @@ class CitationVerifier:
             if full_text:
                 passage = _select_passage(full_text, citation.context)
 
+        passage_origin: str | None = None
+        if passage:
+            passage_origin = "the text of the cited authority"
+
         if not passage:
+            # Without an API token the corpus cannot return the text of a cited
+            # authority. A search result snippet is only usable when it comes from
+            # the authority itself: the search returns the opinions that mention a
+            # case, and treating one of those as the cited authority's passage
+            # would make the support verdict describe the wrong document.
             terms = " ".join(
                 sorted({t for t in _WORD.findall(citation.context) if t.lower() not in _STOPWORDS})[:8]
             )
-            query = f'"{resolved.case_name}" AND ({terms})' if terms else f'"{resolved.case_name}"'
+            cited_name = citation.case_name or resolved.case_name
+            query = f'"{cited_name}" {terms}'.strip()
             outcome = self._search(query)
-            if not outcome.failed and outcome.results:
-                candidate = _resolved_from(outcome.results[0], "cite_search")
-                passage = candidate.snippet
+            if not outcome.failed:
+                for result in outcome.results:
+                    candidate = _resolved_from(result, "cite_search")
+                    if (
+                        resolved.cluster_id is not None
+                        and candidate.cluster_id == resolved.cluster_id
+                        and candidate.snippet
+                    ):
+                        passage = candidate.snippet
+                        passage_origin = "a search result snippet centred on the authority"
+                        break
 
         if not passage:
             return FidelityCheck(
                 support=SupportLevel.UNKNOWN,
-                rationale="No passage from the cited authority was available to review.",
+                rationale=(
+                    "The text of the cited authority could not be read, so there was no passage to "
+                    "review. The corpus returns the opinions that mention an authority rather than "
+                    "the text of the authority itself, and reading that text requires a "
+                    "CourtListener API token."
+                    + (
+                        f" The search for {cited_name!r} did not return the authority itself."
+                        if not outcome.failed
+                        else f" The search for {cited_name!r} failed: {outcome.error}"
+                    )
+                ),
                 model=self.llm.model,
             )
+
+        check = self.llm.assess_support(
+            sentence=citation.context,
+            case_name=resolved.case_name or citation.case_name,
+            passage=passage,
+            citation=citation.matched_text,
+        )
+        # Record where the passage came from, since a snippet covers only the part
+        # of the document around the search match.
+        if check.rationale:
+            check.rationale = f"{check.rationale} (Passage source: {passage_origin}.)"
+        else:
+            check.rationale = f"Passage source: {passage_origin}."
+        return check
         return self.llm.assess_support(
             sentence=citation.context,
             case_name=resolved.case_name or citation.case_name,
