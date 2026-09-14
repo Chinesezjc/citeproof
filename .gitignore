@@ -19,7 +19,8 @@ data/cache/
 
 # Node / frontend
 node_modules/
-frontend/dist/
+# frontend/dist is tracked deliberately: the API serves it, so a clone runs the
+# full application without a Node toolchain. Rebuild with `pnpm build`.
 frontend/.vite/
 .pnpm-store/
 

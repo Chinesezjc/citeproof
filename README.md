@@ -101,7 +101,9 @@ python3 -m venv .venv
 ./.venv/bin/python -m uvicorn citeproof.api:app --port 8000
 ```
 
-Open <http://localhost:8000>, press "Load example", then "Audit citations". The first example
+Open <http://localhost:8000>, press "Load example", then "Audit citations". The built
+interface is committed under `frontend/dist` and served by the API, so no Node toolchain is
+needed to run it. The first example
 is the Avianca material with fabricated and miscited citations; the second contains only real,
 correctly cited authorities and is the negative control.
 
@@ -123,7 +125,7 @@ The test suite runs without network access. It is an extra, so it is not install
 ./.venv/bin/python -m pytest backend/tests -q
 ```
 
-41 tests, about 0.1 seconds.
+47 tests, about 0.1 seconds.
 
 ### Demo interaction script
 
@@ -291,7 +293,7 @@ backend/citeproof/       the audit engine
   llm.py                 the proposition-support client
   report.py              Markdown and JSON rendering
   api.py                 HTTP API and job runner
-backend/tests/           41 tests, no network access
+backend/tests/           47 tests, no network access
 frontend/                React + TypeScript + Tailwind user interface
 data/benchmark/          fixtures with hand-verified ground truth
 data/examples/           the demonstration documents, generated from the fixtures

@@ -17,7 +17,7 @@ What this means concretely:
   repository with the measurement that produced it. The reasons for the verdict logic, the
   three fields that are deliberately not taken from the citation parser, and the decision to
   abstain rather than guess are all written down where they can be checked.
-- The correctness evidence is mechanical rather than a claim of diligence: 41 tests under
+- The correctness evidence is mechanical rather than a claim of diligence: 47 tests under
   `backend/tests`, a benchmark with hand-verified ground truth under `data/benchmark`, and a
   two-way control that includes a document of only real, correctly cited authorities which the
   engine must not accuse. The accuracy figures in the README are produced by

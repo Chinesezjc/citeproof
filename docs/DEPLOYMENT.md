@@ -53,7 +53,7 @@ Then open <http://localhost:8000>.
 
 The free tier has limited memory and disk. The SQLite cache is small, but a Space restarts
 without warning, so expect the cache to be cold after a restart. A cold audit in anonymous mode
-takes roughly 7 seconds per citation.
+takes about 11 seconds per citation, measured.
 
 ## Render
 

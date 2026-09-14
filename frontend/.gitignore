@@ -1,4 +1,6 @@
 node_modules
-dist
 .vite
 *.local
+
+# dist is tracked deliberately: the API serves the built interface, so a clone
+# runs the whole application without a Node toolchain. Rebuild with `pnpm build`.
