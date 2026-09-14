@@ -214,6 +214,38 @@ def test_citation_unconfirmed_and_wrong_court_is_miscited():
     assert finding.error_class == ErrorClass.WRONG_COURT
 
 
+def test_wrong_court_name_that_is_unverified_as_fabricated():
+    """A matching name in another court with a page mismatch is flagged as fabricated."""
+
+    corpus = FakeCorpus(
+        {
+            '"Miller v. United Airlines, Inc."': [
+                case_result(
+                    101,
+                    "ANNE E. MILLER, Plaintiff and Appellant, v. UNITED AIRLINES, INC., Et Al., Defendants and Respondents",
+                    ["174 Cal. App. 3d 878", "220 Cal. Rptr. 684"],
+                    court="Cal. Ct. App.",
+                    date_filed="1985-06-21",
+                )
+            ],
+            '"174 F.3d 366"': [
+                case_result(
+                    102,
+                    "Greenleaf v. Garlock, Inc.",
+                    ["174 F.3d 352"],
+                    court="3d Cir.",
+                )
+            ],
+            ('"174 F.3d 366"', "2d Cir."): [],
+        }
+    )
+    finding = _verify(
+        "Miller v. United Airlines, Inc., 174 F.3d 366, 371-72 (2d Cir. 1999).", corpus
+    )
+    assert finding.verdict == Verdict.FABRICATED
+    assert finding.error_class == ErrorClass.FABRICATED_CITE
+
+
 # -- the honesty rules -----------------------------------------------------
 
 

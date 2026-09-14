@@ -610,6 +610,7 @@ class CitationVerifier:
                 confirming_record = record
                 break
 
+        filtered_match_in_court = False
         if confirming_record is None and name_matching_records and citation.court_id:
             # The corpus records a court for this reporter, so the citation search
             # is repeated restricted to that court. The case itself is then far
@@ -628,6 +629,7 @@ class CitationVerifier:
                             case_name_similarity(citation.case_name, candidate.case_name)
                             >= NAME_ACCEPT_WITH_CITE_THRESHOLD
                         ):
+                            filtered_match_in_court = True
                             confirming_record = candidate
                             break
                 evidence.append(
@@ -735,7 +737,7 @@ class CitationVerifier:
                 )
 
             recorded_courts = [record.court for record in litigation_records if record.court]
-            if (
+            court_mismatch_condition = (
                 citation.court_source == "document"
                 and citation.court
                 and recorded_courts
@@ -743,7 +745,38 @@ class CitationVerifier:
                     normalize_court(citation.court) == normalize_court(court)
                     for court in recorded_courts
                 )
-            ):
+                and not any(_record_lists_cite(record) for record in litigation_records + slot_owners)
+                and name_matching_records
+                and (
+                    # The court-limited citation search did not produce a
+                    # candidate matching the citation under the claimed court.
+                    citation.court_id is None
+                    or not filtered_match_in_court
+                )
+            )
+            if court_mismatch_condition and citation.court_id and citation.court_id.startswith("ca") and not filtered_match_in_court:
+                # In federal-circuit contexts, a matching name in another court
+                # plus a court-specific citation miss usually indicates the
+                # cited citation form was fabricated.
+                return self._with_advisories(
+                    Finding(
+                        citation=citation,
+                        verdict=Verdict.FABRICATED,
+                        error_class=ErrorClass.FABRICATED_CITE,
+                        confidence=0.9,
+                        explanation=(
+                            "The cited case name exists in the corpus, but it is in a different "
+                            f"court and the same-court citation lookup did not return a matching "
+                            f"record for {citation.matched_text}."
+                        ),
+                        resolved_case=name_match,
+                        evidence=evidence,
+                    ),
+                    citation,
+                    advisories,
+                    name_match,
+            )
+            if court_mismatch_condition:
                 return self._with_advisories(
                     Finding(
                         citation=citation,

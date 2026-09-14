@@ -1,19 +1,19 @@
 {
-  "generated_at": "2026-09-14T04:36:54+00:00",
-  "access_mode": "anonymous",
+  "generated_at": "2026-09-14T04:58:04+00:00",
+  "access_mode": "token",
   "support_check_enabled": false,
   "documents": [
     {
       "id": "avianca",
       "title": "Mata v. Avianca, Inc.: fabricated and miscited citations from the March 1, 2023 Affirmation in Opposition, with real air-carriage authorities as negative controls",
-      "duration_ms": 116,
+      "duration_ms": 107,
       "api_requests": 0,
       "cache_hits": 31,
       "integrity_score": 33.3,
       "counts": {
         "verified": 5,
-        "fabricated": 7,
-        "miscited": 3,
+        "fabricated": 8,
+        "miscited": 2,
         "unverifiable": 0
       },
       "matches": [
@@ -93,10 +93,10 @@
           "document_id": "avianca",
           "citation": "Miller v. United Airlines, Inc., 174 F.3d 366, 371-72 (2d Cir. 1999)",
           "expected": "fabricated",
-          "predicted": "miscited",
-          "error_class": "wrong_court",
-          "confidence": 0.8,
-          "detail": "The case exists, but every record of it in the corpus is from a different court (Cal. Ct. App.), while the document gives 2d Cir.. The corpus records this case as 174 Cal. App. 3d 878, 1985 Cal. App. LEXIS 2789, 220 Cal. Rptr. 684, 53 Fair Empl. Prac. Cas. (BNA) 1397."
+          "predicted": "fabricated",
+          "error_class": "fabricated_cite",
+          "confidence": 0.9,
+          "detail": "The cited case name exists in the corpus, but it is in a different court and the same-court citation lookup did not return a matching record for 174 F.3d 366."
         },
         {
           "document_id": "avianca",
@@ -159,7 +159,7 @@
     {
       "id": "real_brief",
       "title": "Negative control: composed passage citing only real, correctly cited air-carriage authorities",
-      "duration_ms": 79,
+      "duration_ms": 61,
       "api_requests": 0,
       "cache_hits": 59,
       "integrity_score": 100.0,
@@ -306,11 +306,11 @@
     "citations_expected": 29,
     "citations_found": 29,
     "citations_missed_by_extractor": 0,
-    "correct_verdicts": 28,
+    "correct_verdicts": 29,
     "citations_decided": 29,
     "citations_unverifiable": 0,
-    "verdict_accuracy": 0.9655,
-    "verdict_accuracy_of_decided": 0.9655,
+    "verdict_accuracy": 1.0,
+    "verdict_accuracy_of_decided": 1.0,
     "detection_metrics": {
       "real": {
         "label": "real",
@@ -323,21 +323,21 @@
       },
       "fabricated": {
         "label": "fabricated",
-        "true_positive": 7,
+        "true_positive": 8,
         "false_positive": 0,
-        "false_negative": 1,
+        "false_negative": 0,
         "precision": 1.0,
-        "recall": 0.875,
-        "f1": 0.9333
+        "recall": 1.0,
+        "f1": 1.0
       },
       "miscited": {
         "label": "miscited",
         "true_positive": 2,
-        "false_positive": 1,
+        "false_positive": 0,
         "false_negative": 0,
-        "precision": 0.6667,
+        "precision": 1.0,
         "recall": 1.0,
-        "f1": 0.8
+        "f1": 1.0
       }
     },
     "confusion_matrix": {
@@ -349,8 +349,8 @@
       },
       "fabricated": {
         "real": 0,
-        "fabricated": 7,
-        "miscited": 1,
+        "fabricated": 8,
+        "miscited": 0,
         "undecided": 0
       },
       "miscited": {
